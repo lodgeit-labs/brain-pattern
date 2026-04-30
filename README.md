@@ -1,59 +1,97 @@
 # brain-pattern
 
-**An optional architecture for AI-assisted software development.**
+**An optional architecture for AI-assisted software development — now with deterministic closure.**
 
-A vendor-neutral pattern for giving coding agents persistent memory, identity, and integrity discipline — using nothing more than markdown, git, and ~500 lines of Python tooling.
+A vendor-neutral pattern for giving coding agents persistent memory, identity, integrity discipline, **and a self-auditing Prolog engine that blocks PRs which drift from the recorded state.** Built from nothing more than markdown, git, and ~1,000 lines of Python + SWI-Prolog tooling.
 
 Practised in production at [LodgeiT Labs](https://lodgeit-labs.org). Open-sourced because the pattern is more useful than any one implementation of it.
 
 ---
 
+## Why a developer managing GitHub repos should care
+
+If you ship code through GitHub with help from any coding agent — Copilot, Cursor, Claude Code, Gemini, OpenClaw — you have probably noticed:
+
+- Your agent **forgets your team's conventions** five minutes after you told it.
+- It **hallucinates an API**, a build flag, a deploy step, a lint rule that doesn't exist.
+- It **drifts from your build / test / deploy process** every other PR.
+- It **suggests a refactor that contradicts a decision** you wrote down two years ago and have since forgotten.
+- It **leaks proprietary context** — internal hostnames, client identifiers, billing codes — into a comment, a commit message, or a PR description that ends up on a public repo.
+
+These are not LLM problems. They are **memory and discipline problems**. The fix is not a bigger model; it is a small, durable structure your agent reads at the start of every session, writes to as it works, and is *audited against* before any PR can land.
+
+The Brain Pattern gives you that structure in three escalating tiers:
+
+| Tier | What you get | Effort |
+|---|---|---|
+| **Layer 1 (persona + memory)** | Your agent stops being a stranger every session. | 90 minutes. |
+| **Proofing 0 (graph integrity)** | Every claim in your Brain is cryptographically anchored. Hand-edits to canonical metadata fail CI. | One day. |
+| **Proofing 1 (deterministic closure)** | Your Brain audits **itself**. A Prolog engine reads the markdown, projects it into facts, and runs rules. Drift is detected automatically and blocks merge. | One day. |
+
+The proofing tiers are what move you from *"I have notes my agent reads"* to *"my repo cannot land a PR that contradicts what it claims about itself."* That is the property GitHub-managing devs care about, because it makes review tractable: you stop arguing about whether the docs match the code; the gate has already proved it.
+
+---
+
 ## What this is
 
-If your AI coding agent ever:
+A **pattern**, not a product:
 
-- Forgets your team's conventions five minutes after you told it
-- Hallucinates an API that doesn't exist
-- Drifts from your build / test / deploy process
-- Suggests something that contradicts a decision you made two years ago
-- Leaks proprietary context into a public artefact
-
-…you have a memory and discipline problem, not an LLM problem. **The Brain Pattern is the fix.** It is a small, durable structure — markdown files in a git repo — that your agent reads at the start of every session and writes to as it works.
-
-No infrastructure, no cloud, no licence, no vendor lock-in. **You can adopt Layer 1 in 90 minutes.**
+- No infrastructure. No cloud. No licence. No vendor lock-in.
+- ~1,000 LOC of Python + SWI-Prolog tooling, all Apache-2.0, lift-and-fork friendly.
+- Works with **any** coding agent that can read a file.
+- Tier 1 (persona + memory) adoptable in 90 minutes.
+- Both proofing tiers demonstrated end-to-end in [the reference implementation](#reference-implementation).
 
 ## What this isn't
 
-- **Not a product.** Nothing to install. Nothing to buy.
-- **Not a framework.** No code to import.
-- **Not vendor-specific.** Works with Copilot, Cursor, Claude Code, Gemini, OpenClaw, or anything else that can read a file.
-- **Not prescriptive.** Take the layers you want, ignore the rest.
+- **Not a product.** Nothing to install, nothing to buy, nothing to subscribe to.
+- **Not a framework.** No code to import; no package to depend on.
+- **Not vendor-specific.** Switch agents tomorrow; your Brain comes with you.
+- **Not all-or-nothing.** Take Layer 1 today, add the proofing tiers when you outgrow the pain.
 
 ## Read the document
 
-→ **[`BRAIN_PATTERN_FOR_DEVELOPERS.md`](./BRAIN_PATTERN_FOR_DEVELOPERS.md)** — full pattern, ~15 minute read.
+→ **[`BRAIN_PATTERN_FOR_DEVELOPERS.md`](./BRAIN_PATTERN_FOR_DEVELOPERS.md)** — full pattern, ~20 minute read.
 
 The document covers:
 
 1. The problem, stated plainly
-2. The pattern in one diagram (Agent → Brain → Kit, three zones, downhill flow)
+2. The pattern in one diagram (Agent → Brain → Kit, three zones, downhill flow, **bilateral audit**)
 3. What lives in a Brain
-4. The five layers — persona, standing rules, knowledge graph, integrity tooling, egress filter
+4. The six layers — persona, standing rules, knowledge graph, **graph-integrity tooling (Proofing 0)**, egress filter, **deterministic closure (Proofing 1)**
 5. A 90-minute experiment you can run today
-6. Honest cost / benefit
-7. Common objections, answered
+6. **Proofing 0 worked example** — content-hashes + mutation ledgers in practice
+7. **Proofing 1 worked example** — the Prolog audit engine, with two real "structural sight" loops from the reference Brain
+8. Honest cost / benefit
+9. Common objections, answered
+
+## Why developers managing GitHub repos buy in
+
+The two proofing tiers translate into concrete, mergeable PR-level guarantees you can put on your CI status page:
+
+- **Proofing 0 (graph integrity).** No PR lands if any node's `content_hash` was changed without an entry in the mutation ledger. **Hallucinated metadata cannot survive the gate.**
+- **Proofing 1 (deterministic closure).** A SWI-Prolog audit reads your Brain on every PR, projects it into facts (~150 facts in the reference Brain today), and evaluates a small ruleset (currently 7 rules, "W1–W7"). The gate is **tri-state**: exit 0 = COHERENT, exit 1 = INCOHERENT (rule violation), exit 2+ = the audit could not run (infrastructure broken). All three states are surfaced separately in CI; you cannot mistake "audit silently broke" for "audit passed."
+
+In the reference Brain, Proofing 1 has already caught:
+
+- Three carryover files claiming `Status: Active` while the index claimed they were resolved (PR #89/#90).
+- 21 lesson citations in MEMORY.md pointing at registry entries that didn't exist (PR #91/#92).
+- A protocol-version pointer that drifted across two sections after a schema upgrade (PRs #85, several iterations).
+- An attempted PR that would have removed a banked lesson — the gate refused to let it land.
+
+These are exactly the kinds of drift that **silently rot a wiki**. Here, they fail loudly, on a known PR, with a Prolog finding citing the offending file and line. **The audit reproduces what humans see when they look carefully — then it does it on every CI run, forever.**
 
 ## Reference implementation
 
-LodgeiT Labs runs this pattern as part of building open-source accounting and tax compliance systems. The public Kit produced from that Brain lives at:
+LodgeiT Labs runs this pattern in production. The public Kit produced from the Brain lives at:
 
 - **[`lodgeit-labs/clawdog`](https://github.com/lodgeit-labs/clawdog)** — the open-source classification engine.
 
-The Brain itself is private (it contains LodgeiT-specific operational knowledge). The *pattern*, as documented here, is open.
+The Brain itself is private (it contains LodgeiT-specific operational knowledge), but the *pattern* is open. If you want to see the Proofing 1 tooling in flight, the [`BRAIN_PATTERN_FOR_DEVELOPERS.md`](./BRAIN_PATTERN_FOR_DEVELOPERS.md) document includes annotated extracts from the live extractor, audit engine, and CI workflow.
 
 ## Audience
 
-This document is written for **senior software engineers** evaluating whether to adopt structured memory for their AI coding workflows. It is deliberately not aimed at managers or executives — it assumes you're the person who will actually try the experiment.
+This document is written for **senior software engineers and developers managing GitHub repositories** evaluating whether to adopt structured memory and self-auditing for their AI coding workflows. It is deliberately not aimed at managers; it assumes you're the person who will actually try the experiment, run the Makefile, and read the Prolog.
 
 If you're an engineering leader looking for a one-pager to circulate, the TL;DR section of the main document is your starting point.
 
