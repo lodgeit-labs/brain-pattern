@@ -460,6 +460,52 @@ After Proofing 1 was switched to blocking (PR #93), the next attempted PR includ
 
 ---
 
+## The human-side disciplines that complement the audit
+
+Proofing 0 and Proofing 1 catch *structural* drift: hashes that don't match, citations that don't resolve, status fields that contradict the index. They do not catch every class of failure that erodes a Brain. The four disciplines below cover the gaps the Prolog cannot see, and the reference Brain has paid for each of them by getting one wrong first.
+
+### 1. Treat ceilings as measurements, not aspirations
+
+A persistent index file (the equivalent of MEMORY.md in the reference Brain) accumulates pressure: new threads, new activity, new pointers to topical files. It is tempting to declare a *target ceiling* ("keep it under 8 KB") and treat the rule as discipline.
+
+The failure mode: the file steady-states well above the target, the discipline becomes broken-windows aspirational, and every new edit silently hopes the next curation pass will deal with it.
+
+The fix is to **measure the load-bearing floor before setting the ceiling.** A well-curated index has a floor that cannot compress further without losing signal: the persona block, the file-trigger index, the standing rules. Sum those, add a realistic margin for the surfaces that legitimately grow (open threads, latest activity, recent carryovers), and set the ceiling at that number — not at a smaller number you wish were true. A ceiling that matches the file's actual physics gets enforced; a ceiling that doesn't, doesn't.
+
+In the reference Brain, this looks like a soft ceiling and a hard ceiling carried in the file's own header, alongside a forensic record of past curation passes and the size each landed at. The audit's W2 rule (index ceiling) keys off the *self-declared* ceiling, not a hard-coded number, so the contract stays honest as the project's load-bearing floor evolves.
+
+### 2. Refuse to demote auto-injected rules behind pointers, even under size pressure
+
+The rules a coding agent must obey on every turn (the standing rules) are auto-loaded as part of the index. When the index gets large, the obvious move is to demote those rules into a topical file, leaving a one-line summary in the index pointing at the canonical detail.
+
+**Don't.** A rule that lives behind a pointer is a rule the agent has to *fetch* before acting. Fetching is a recall task, and recall drifts under context load. The very property that made the rule worth declaring — that it is unmissable, present at every reasoning step — is exactly the property that pointer-demotion destroys.
+
+The binding shape is: any rule whose violation would normally produce a binary failure (a non-zero exit, a refused commit, a refused merge) gets its full contract inline in the index. Rules that are advisory in nature ("prefer terse replies," "don't dominate group chats") live in the persona file. The line between the two is whether the rule has a CI-shaped enforcement surface. If it does, the rule belongs in the index, full text, even when the index is under ceiling pressure. The ceiling is the thing that yields, not the rule.
+
+### 3. Use a second agent to challenge curation proposals before they ship
+
+A curation pass is itself a design artefact. The first agent (the one curating) inherits its own assumptions. A second agent, given the same brief and asked to pressure-test the proposed plan, will catch class-of-mistake errors the first agent cannot see from inside.
+
+The reference Brain practises this as a **Memory Tracer review**: before a non-trivial curation PR opens, the proposed plan goes through a separate agent that reviews scope, floor target, and PR sequencing. Three concrete corrections that this pattern has surfaced in production, all in a single sprint:
+
+- **Don't demote the standing rules** even when ceiling pressure suggests it (per the principle above) — the first agent had agreed in the abstract but had still drafted the demotion as a phase. The Tracer caught it.
+- **Don't aim for an aspirational floor** that requires compressing load-bearing content; pick the floor that matches the load-bearing physics (per the principle above).
+- **Don't bundle additive and subtractive work in a single PR** when they touch the same surface; split into two PRs so an audit failure isolates to one cause (per the principle below).
+
+The Tracer is not a checker; it is an adversarial collaborator. The cheapest implementation is a second context, given the proposal as text and asked specifically *"what is wrong with this plan?"*.
+
+### 4. Sequence additive and subtractive work in separate PRs
+
+A curation pass typically has two halves: an *additive* half (catch a topical file up to live state, add resolution stubs to a registry) and a *subtractive* half (demote the matching detail out of the index). They are interdependent — you cannot do the subtractive half safely until the additive half lands, because in the gap between the two the same content exists in both surfaces and a coherence audit can legitimately flag the duplication.
+
+The discipline is: **two PRs, sequenced.** PR 1 is purely additive. PR 2 is the trim, against the now-prepared sister file. If PR 1 fails its audit, you know you broke a citation or a stub. If PR 2 fails, you know you broke a demotion or an index-detail correspondence. The audit failure isolates to one cause instead of two.
+
+The complement to this is the **cut-over diff review**: before committing PR 2, walk every row removed from the index and confirm it exists in the topical file with the same identifier and the same closure state. The Prolog audit will catch this on the server side, but the diff-review catches it before the commit message is even written, which means a clean PR opens green instead of opening red and being amended. The 30 seconds of diff review at PR 2 saves a permanent CI breakage on a public PR.
+
+These four disciplines are not enforced by the Prolog audit — they are how a maintainer keeps the audit's gates *meaningful* over the lifetime of the Brain. The audit catches the failures that survive these disciplines; these disciplines catch the failures the audit cannot see.
+
+---
+
 ## What it costs
 
 | Resource | Cost |

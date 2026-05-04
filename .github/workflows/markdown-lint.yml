@@ -1,0 +1,47 @@
+name: markdown-lint
+
+# Catches malformed markdown in the public methodology before it ships.
+# Companion to `link-check` (.github/workflows/link-check.yml).
+#
+# Why this gate exists:
+#   The kind of drift that erodes a teaching document over time is
+#   often invisible at PR-review time: trailing whitespace, broken
+#   table syntax, unclosed code fences, accidentally-removed list
+#   markers. markdownlint catches these structurally before they
+#   reach the rendered docs.
+#
+# Discipline (mirrors the Brain's `audit-narrative-layer` posture):
+#   This is a *blocking* check. The maintainer's stated discipline is
+#   "I won't merge without checks." This workflow makes that discipline
+#   structurally enforceable on `brain-pattern` itself, so the public
+#   methodology repo practises what it preaches.
+#
+# Configuration: see `.markdownlint-cli2.yaml` at repo root. The config
+# file disables the *cosmetic* rules (line length, duplicate-heading
+# noise, bare-URL preference) and keeps the *structural* ones.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  markdownlint:
+    name: Lint markdown structure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Run markdownlint-cli2
+        uses: DavidAnson/markdownlint-cli2-action@v23.1.0
+        with:
+          # No explicit globs argument — picks up `globs:` from
+          # .markdownlint-cli2.yaml at repo root.
+          # `fix: false` (default): report-only mode. CI does not
+          # auto-edit committed files; that is a maintainer choice.
+          fix: false

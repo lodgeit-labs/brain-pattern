@@ -4,7 +4,7 @@
 
 A vendor-neutral pattern for giving coding agents persistent memory, identity, integrity discipline, **and a self-auditing Prolog engine that blocks PRs which drift from the recorded state.** Built from nothing more than markdown, git, and ~1,000 lines of Python + SWI-Prolog tooling.
 
-Practised in production at [LodgeiT Labs](https://lodgeit-labs.org). Open-sourced because the pattern is more useful than any one implementation of it.
+Practised in production at [LodgeiT Labs](https://lodgeit.org). Open-sourced because the pattern is more useful than any one implementation of it.
 
 ---
 
@@ -62,8 +62,9 @@ The document covers:
 5. A 90-minute experiment you can run today
 6. **Proofing 0 worked example** — content-hashes + mutation ledgers in practice
 7. **Proofing 1 worked example** — the Prolog audit engine, with two real "structural sight" loops from the reference Brain
-8. Honest cost / benefit
-9. Common objections, answered
+8. **The human-side disciplines that complement the audit** — ceiling-as-measurement, the Memory Tracer review pattern, two-PR additive-then-subtractive sequencing, cut-over diff review
+9. Honest cost / benefit
+10. Common objections, answered
 
 ## Why developers managing GitHub repos buy in
 
@@ -75,9 +76,10 @@ The two proofing tiers translate into concrete, mergeable PR-level guarantees yo
 In the reference Brain, Proofing 1 has already caught:
 
 - Three carryover files claiming `Status: Active` while the index claimed they were resolved (PR #89/#90).
-- 21 lesson citations in MEMORY.md pointing at registry entries that didn't exist (PR #91/#92).
-- A protocol-version pointer that drifted across two sections after a schema upgrade (PRs #85, several iterations).
+- 21 lesson citations in the index pointing at registry entries that didn't exist (PR #91/#92).
+- A protocol-version pointer that drifted across two sections after a schema upgrade (several iterations).
 - An attempted PR that would have removed a banked lesson — the gate refused to let it land.
+- During a curation pass that demoted index detail into topical files, the same gate caught the cut-over **before** commit: every demoted row from the index was confirmed present in the topical file with the same id and the same closure state, refusing to let an index/detail mismatch ship.
 
 These are exactly the kinds of drift that **silently rot a wiki**. Here, they fail loudly, on a known PR, with a Prolog finding citing the offending file and line. **The audit reproduces what humans see when they look carefully — then it does it on every CI run, forever.**
 
@@ -95,6 +97,12 @@ This document is written for **senior software engineers and developers managing
 
 If you're an engineering leader looking for a one-pager to circulate, the TL;DR section of the main document is your starting point.
 
+## How this repo practises the pattern
+
+A documentation repo is not a Brain — there is no knowledge graph here, no `content_hash` frontmatter, no W-rules to fire. So Proofing 0 and Proofing 1 don't apply. But the *publication-integrity* surface still does, and this repo gates it: every PR runs `link-check` (lychee verifies every URL resolves) and `markdown-lint` (markdownlint verifies the structure is well-formed). Both block merge on failure.
+
+The principle generalises: **the cheapest discipline that catches a real failure class is the one to ship.** A teaching artefact about strict-mode integrity that itself accepted broken links would be incoherent.
+
 ## Discussion
 
 Issues are open. If you adopt the pattern, modify it, find a flaw in it, or want to share what your team did differently, please [open an issue](https://github.com/lodgeit-labs/brain-pattern/issues). The pattern improves through being practised in different contexts.
@@ -105,4 +113,4 @@ Issues are open. If you adopt the pattern, modify it, find a flaw in it, or want
 
 ---
 
-*From [LodgeiT Labs](https://lodgeit-labs.org). Maintained by ClawDog ∮*
+*From [LodgeiT Labs](https://lodgeit.org). Maintained by ClawDog ∮*
