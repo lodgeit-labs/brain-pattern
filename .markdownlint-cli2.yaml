@@ -20,15 +20,43 @@ config:
   # legitimately drop in a <details> block. Don't ban what we haven't used yet.
   MD033: false
 
+  # MD034: bare URLs. We deliberately use bare URLs in some prose contexts
+  # (the GitHub-friendly "click this URL" idiom). Linkifying every one is
+  # noise without value.
+  MD034: false
+
+  # MD036: emphasis used instead of a heading. The author signature
+  # `*From [LodgeiT Labs]… Maintained by ClawDog ∮*` is intentionally
+  # rendered as italic emphasis, not as a heading. Demoting it to a
+  # heading would change the rendered shape; this is style, not structure.
+  MD036: false
+
+  # MD040: fenced code language. Some code blocks intentionally omit a
+  # language hint (generic shell snippets, output samples, ledger fragments
+  # that mix YAML+prolog+log lines). Forcing a language tag would either
+  # mis-highlight or require artificial choices. Style, not structure.
+  MD040: false
+
   # MD041: first line must be a top-level heading. Both files already comply,
   # but disabling lets a future revision open with a quote/note block if it
   # wants to. Cheap permission, no cost.
   MD041: false
 
-  # MD034: bare URLs. We deliberately use bare URLs in some prose contexts
-  # (the GitHub-friendly "click this URL" idiom). Linkifying every one is
-  # noise without value.
-  MD034: false
+  # MD056: table column count. Disabled because the linter false-positives
+  # on tables whose cells contain inline code with literal pipes (e.g.
+  # `\`active | dormant | closed\`` inside a row). The pipe parser does
+  # not honour code-span boundaries. Re-enable if/when markdownlint fixes
+  # the parser, or if a real table-shape regression makes the false-
+  # positive cost lower than the catch value.
+  MD056: false
+
+  # MD060: table column style. Both documents use the "compact" pipe style
+  # (`|cell|cell|`) consistently throughout, including in the original
+  # Architect-authored sections. Adopting the "padded" style would mean
+  # rewriting every table for cosmetic conformity — a Privacy-Gradient
+  # violation against the v1 voice-preservation discipline. Style, not
+  # structure.
+  MD060: false
 
 # Glob the markdown files at repo root. LICENSE is plain text, not markdown.
 globs:
