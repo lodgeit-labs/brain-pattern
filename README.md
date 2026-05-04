@@ -97,6 +97,12 @@ This document is written for **senior software engineers and developers managing
 
 If you're an engineering leader looking for a one-pager to circulate, the TL;DR section of the main document is your starting point.
 
+## How this repo practises the pattern
+
+A documentation repo is not a Brain — there is no knowledge graph here, no `content_hash` frontmatter, no W-rules to fire. So Proofing 0 and Proofing 1 don't apply. But the *publication-integrity* surface still does, and this repo gates it: every PR runs `link-check` (lychee verifies every URL resolves) and `markdown-lint` (markdownlint verifies the structure is well-formed). Both block merge on failure.
+
+The principle generalises: **the cheapest discipline that catches a real failure class is the one to ship.** A teaching artefact about strict-mode integrity that itself accepted broken links would be incoherent.
+
 ## Discussion
 
 Issues are open. If you adopt the pattern, modify it, find a flaw in it, or want to share what your team did differently, please [open an issue](https://github.com/lodgeit-labs/brain-pattern/issues). The pattern improves through being practised in different contexts.

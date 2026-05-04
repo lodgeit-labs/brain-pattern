@@ -1,0 +1,52 @@
+name: link-check
+
+# Catches URL drift in the public methodology before it ships.
+# Companion to `markdown-lint` (.github/workflows/markdown-lint.yml).
+#
+# Why this gate exists:
+#   `brain-pattern` is a teaching artefact. Every URL in the README or
+#   the developer doc is part of the methodology's surface area; a 404
+#   inside a published methodology document is a credibility failure.
+#   This workflow re-runs `lychee` on every PR + push to main and
+#   posts a status check the maintainer relies on before merging.
+#
+# What it does NOT do:
+#   It is not the Brain's coherence audit (Prolog over a knowledge
+#   graph). `brain-pattern` is prose, not a knowledge graph, and a
+#   coherence audit on prose would be theatre. This workflow guards
+#   *publication integrity*, which is a different problem class.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lychee:
+    name: Verify all URLs resolve
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Run lychee on all markdown files
+        uses: lycheeverse/lychee-action@v2.8.0
+        with:
+          # `--no-progress`: keep the action log readable.
+          # `--max-concurrency 4`: be polite to remote hosts.
+          # `--timeout 15`: 15 seconds is enough; slower means dead.
+          # Glob: every .md file at repo root. Don't recurse; we don't
+          # have nested doc trees yet.
+          args: >-
+            --no-progress
+            --max-concurrency 4
+            --timeout 15
+            --
+            *.md
+          # Fail the job on any non-OK URL. Lychee exit codes:
+          #   0 = success, 2 = link failures.
+          fail: true
