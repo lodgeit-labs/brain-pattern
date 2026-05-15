@@ -212,6 +212,18 @@ This is **Proofing 0**: every canonical node carries its own integrity proof. We
 
 **Cost:** ~1 day to build the tooling, then negligible. The scripts are typically <500 lines of Python total. **Benefit:** the Brain remains trustworthy as it grows, even with multiple human and agent authors mutating it concurrently.
 
+#### What Proofing 0 doesn't catch by default
+
+The content-hash check above answers one question: *did anyone edit this node without recording the change?* It doesn't answer the questions that adopters discover the second they put real load through the gate. Three sharper variants are worth shipping alongside the baseline, each closing a failure mode that survives a green `make audit`.
+
+The first variant: **content fidelity beyond existence.** When a node says it has lifted a passage verbatim from another file (a public source, a sibling node, an external standard), the baseline audit can confirm the source exists but cannot confirm the lift is still byte-identical. The body of the claim and the body of the source can drift independently over months and the hash check never notices, because both files re-hash cleanly on their own. The fix is a second gate that walks every declared verbatim claim, reads the sidecar, and refuses the commit if the byte-diff isn't zero — or if a verbatim-lift phrase appears in the body without a corresponding declaration. The lesson is structural: *verifying that a file exists is not verifying that its content is what the citing site claims it is.*
+
+The second variant: **production-bundle assertions, not just hermetic-test assertions.** Adopters who add Proofing 0 typically also add a hermetic test suite that mocks out the filesystem and exercises the audit against synthetic fixtures. Those suites pass cleanly even when the real bundle is missing, malformed, or wired to the wrong path in the deploy artefact. A green hermetic suite without a complementary production-bundle assertion is *pre-broken*: the gate that should fire at deploy time silently doesn't, because nothing has ever tested it against the real shape. The fix is a small parallel test path that exercises the production resolver against the production bundle, with the production environment shape, and asserts the structural markers a real request would traverse. It is cheap to add and catches an entire class of "the test was green and production was on fire" incidents.
+
+The third variant: **near-miss negative fixtures alongside positive ones.** A self-test suite that only carries positive examples (the rule fires when it should) gives no signal when the rule's *boundary* drifts — when a regex starts matching one character too wide, or a parser starts accepting something it shouldn't. Pairing every positive fixture with a near-miss negative fixture (the rule must *not* fire on this almost-identical case) makes boundary drift fail loudly the first time it crosses. It is the difference between testing *that the gate fires* and testing *that the gate fires exactly when it should*.
+
+None of these are baseline-Proofing-0 requirements. They are the sharper variants the reference Brain ships now because each one paid for itself the first time something slipped past the baseline.
+
 A worked example of Proofing 0 in flight is in [Worked example: Proofing 0](#worked-example-proofing-0).
 
 ### Layer 5 — Egress filter (the Privacy Gradient)
@@ -324,23 +336,27 @@ LodgeiT Labs has open-sourced its own implementation as the reference example fo
 If you want to see whether this pattern fits your workflow, try this sequence:
 
 **Minutes 0–15: stand up an empty Brain.**
+
 1. Create a new private git repo. Call it `<your-name>-brain` or `<team-name>-brain`.
 2. Add five files at the root: `SOUL.md`, `IDENTITY.md`, `USER.md`, `AGENTS.md`, `MEMORY.md`.
 3. In each file, write 5–10 lines about what it represents. Be specific. Be opinionated.
 4. Commit. Push.
 
 **Minutes 15–45: write three real architectural decisions.**
+
 1. Make a `PROJECT_NOTES/` folder.
 2. Pick three real architectural decisions from your current legacy system — choices that took weeks to make and that nobody outside your team understands.
 3. Write each one as a separate markdown file: the decision, the alternatives considered, the constraints that ruled them out, the consequences. 100–300 words each.
 4. Commit. Push.
 
 **Minutes 45–75: point your agent at the Brain.**
+
 1. Open your coding agent (Copilot Workspace, Cursor, Claude Code, OpenClaw, whatever you use).
 2. Tell it: *"At the start of every session, read SOUL.md, IDENTITY.md, USER.md, and AGENTS.md from this repo. Then proceed."*
 3. (For some agents, this means adding the repo to its workspace context; for others, putting the instructions in a `.cursorrules` / `CLAUDE.md` / equivalent file. The mechanism varies; the principle doesn't.)
 
 **Minutes 75–90: ask it three questions you've previously had to re-explain every session.**
+
 1. *"Why did we choose X over Y for the order pipeline?"*
 2. *"What's our deployment sequence for staging?"*
 3. *"Walk me through the gotchas in the SOAP client."*
@@ -456,13 +472,39 @@ PR #92 promoted 14 of the 21 to the registry, with verbatim sourcing (every prom
 
 After Proofing 1 was switched to blocking (PR #93), the next attempted PR included a routine MEMORY.md curation that incidentally removed a lesson registry entry. The PR opened. CI ran. CI failed with W1 dangling citations. The PR could not merge. The author (the agent itself, in this case) noticed the contradiction in the same breath as acknowledging it, restored the entry, and re-pushed.
 
+### Loop 4 — a behavioural rule promoted to binary failure catches real misses on the next two commits
+
+One discipline in the reference Brain lived for months as a written rule that said *every merged PR must be rowed in this index file with its merge SHA and a one-paragraph summary*. The rule was clear, the index existed, the agent and the human both agreed it was important — and over a seven-day window thirty merged PRs accumulated without rows, because nothing physically halted the workflow when a row was forgotten.
+
+The drift was caught during an audit pass and the response was to promote the discipline from behavioural recall to binary failure: a small verifier walks the merged-PR history on master, walks the index file, and exits non-zero if any merged PR above a stated floor has neither a row nor an explicit exempt marker. Pre-commit hook, CI workflow, Makefile target. Standard architectural shape.
+
+The rule went green at landing and then immediately caught two real misses on the next two commits — each one a PR that closed substantive structural work and was about to be banked into the index, except the row had been forgotten in the rush of getting the work itself merged. The verifier blocked both commits; the missing rows were added; the commits re-passed; the index never drifted again.
+
+This is the property worth naming. **The rule didn't change behaviour by being clearer or more frequently reminded. It changed behaviour by becoming the exit code of a command the workflow runs.** A rule whose only enforcement is *please remember* drifts. The same rule, given a small verifier that exits 1 when it's violated, doesn't — because the workflow physically halts when it's violated, and the next thing the author does is fix it.
+
 **The structural sight reproduces what humans see when they look carefully — then it does it on every CI run, forever.** That is the property GitHub-managing developers buy when they adopt Proofing 1.
+
+---
+
+## Why these tiers are gates, not guidelines
+
+There is a single principle underneath every proofing tier above, and it is worth stating directly because it determines which disciplines you bother to mechanise and which you leave as written rules.
+
+**Rules that depend on the agent remembering them drift. Rules that physically halt the workflow when they're violated don't.**
+
+The rules you write down in the Brain are, by default, behavioural — they bind only as long as the reader (human or agent) recalls them at the right moment. Under context load, fatigue, or simple novelty, recall degrades. The drift is not a moral failing; it is a property of probabilistic readers under real conditions. You can mitigate it with reminders, repetition, and discipline, and you should — but you will not eliminate it.
+
+The rules you encode as binary-failure gates bind differently. A rule that exits non-zero when violated stops being a recall task and starts being a workflow constraint. You cannot push past it without overriding it explicitly, which leaves a visible trail. The cost of "forgetting" a binary-failure rule is the workflow halting; the cost of remembering it is zero. The asymmetry is what makes the rule load-bearing.
+
+This is the meta-principle that organises the proofing tiers. Layer 4 (Proofing 0) takes the rule *don't edit a canonical node without recording the change* and makes it a hash check that fails CI. Layer 6 (Proofing 1) takes a set of structural-consistency rules and makes them a Prolog audit that fails CI. The human-side disciplines below are the residual: rules whose failure modes are real but whose enforcement surface is not yet a binary-failure gate. Each one is a candidate for promotion the moment its drift cost crosses the cost of writing the verifier.
+
+The corollary worth carrying explicitly: **a rule promoted from behavioural to binary-failure should be promoted using the same architectural shape every time.** The reference Brain has converged on a six-element shape after enough one-off variations to be sure it generalises. It is set out in [Building your own audit rule](#building-your-own-audit-rule) below the human-side disciplines.
 
 ---
 
 ## The human-side disciplines that complement the audit
 
-Proofing 0 and Proofing 1 catch *structural* drift: hashes that don't match, citations that don't resolve, status fields that contradict the index. They do not catch every class of failure that erodes a Brain. The four disciplines below cover the gaps the Prolog cannot see, and the reference Brain has paid for each of them by getting one wrong first.
+Proofing 0 and Proofing 1 catch *structural* drift: hashes that don't match, citations that don't resolve, status fields that contradict the index. They do not catch every class of failure that erodes a Brain. The disciplines below cover the gaps the Prolog cannot see, and the reference Brain has paid for each of them by getting one wrong first. Each one is also a candidate for promotion to a binary-failure gate — if and when its enforcement surface becomes mechanisable and its drift cost crosses the cost of writing the verifier.
 
 ### 1. Treat ceilings as measurements, not aspirations
 
@@ -503,6 +545,38 @@ The discipline is: **two PRs, sequenced.** PR 1 is purely additive. PR 2 is the 
 The complement to this is the **cut-over diff review**: before committing PR 2, walk every row removed from the index and confirm it exists in the topical file with the same identifier and the same closure state. The Prolog audit will catch this on the server side, but the diff-review catches it before the commit message is even written, which means a clean PR opens green instead of opening red and being amended. The 30 seconds of diff review at PR 2 saves a permanent CI breakage on a public PR.
 
 These four disciplines are not enforced by the Prolog audit — they are how a maintainer keeps the audit's gates *meaningful* over the lifetime of the Brain. The audit catches the failures that survive these disciplines; these disciplines catch the failures the audit cannot see.
+
+---
+
+## Building your own audit rule
+
+The disciplines above sit on the human side because their enforcement surface isn't mechanisable yet — either the failure mode is intrinsically behavioural, or no one has paid for the verifier. The interesting question for adopters isn't whether to write a rule; it's how to write one when the cost crosses the threshold. The reference Brain has done this enough times to have converged on a fixed architectural shape, and it is the cheapest part of this whole pattern to lift directly.
+
+A new binary-failure rule ships as six small artefacts. None of them is optional; the absence of any one is a known failure mode the reference Brain has paid for.
+
+**1. A verifier script with a tri-state exit code.** The same `0` / `1` / `2+` contract Layer 6 uses for Proofing 1, applied here. Exit 0 means the rule found no violations. Exit 1 means the rule found a real violation — the workflow author fixes the underlying state. Exit 2 or higher means the verifier itself could not run (parse error, missing file, broken regex), which is *not* the same as a clean run and must halt loudly rather than be quietly absorbed as a passing result. The distinction between "the rule fired green" and "the rule could not be evaluated" is load-bearing; conflating them is how silent-broken-gate failures originate.
+
+**2. A pre-commit hook entry.** The verifier runs at commit time, before the staged change reaches the remote. This is the fastest feedback loop the author gets — violations surface in seconds, against the diff in front of them, while the context is still hot. Expensive verifiers can be conditional on whether the relevant file is staged; cheap ones can run unconditionally. Either way the hook is present.
+
+**3. A CI workflow step.** The same verifier runs on every PR and every push to the protected branch. This is the catch-all backstop against `--no-verify` bypasses, against developers who haven't installed the hooks, and against authors operating on machines where the hook path doesn't apply. Pre-commit is the convenience layer; CI is the perimeter.
+
+**4. A self-test suite.** Every exit-code path of the verifier is covered by a test fixture: at least one positive fixture per violation class (the rule must fire), at least one negative fixture for each (the rule must not fire on the near-miss case), and at least one infra-failure fixture (the verifier must exit in the 2+ band, not the 1 band, when its inputs are malformed). The near-miss negative is the one most adopters forget, and it is the one that catches regex-width drift and parser-classifier drift months later.
+
+**5. A short prose entry next to the standing rules.** Two paragraphs at most: the rule's binding contract, its exit-code semantics, and a cross-reference to the verifier script. This is the surface the agent reads when reasoning about whether a proposed action would trip the gate; without it, the gate exists but is structurally invisible to the agent's planning step.
+
+**6. A Makefile target.** The verifier is invocable manually by both the author and the agent without needing to remember its path or its flags. This is what enables the agent to run pre-flight checks before opening a PR, the maintainer to run it ad hoc when debugging, and the CI workflow to call it through the same interface that humans use. One name; one contract; everywhere it runs.
+
+That is the whole shape. The reference Brain ships seven binary-failure rules built to this template at the time of this writing, and the marginal cost of the seventh was a small fraction of the marginal cost of the first — because each new rule is the same shape, only the verifier body differs. The shape is the lift; the verifier is the easy part.
+
+### Auditing the audits
+
+There is one more invariant worth promoting, because it is the variant that closes the recursion. The rules-list itself is a knowledge artefact; the rule that *every rule must ship under the six-element shape* is itself a behavioural rule unless something physically checks it.
+
+The reference Brain promotes that meta-invariant to a small verifier that walks the standing-rules block and, for each numbered rule, requires either a reference to its mechanical perimeter (a script, a hook target, a Makefile target, or an explicit composite delegation to another rule) or an explicit exempt marker carrying a non-empty justification. A rule with neither is a logic-drift failure. A rule whose stated perimeter doesn't exist on disk is a logic-drift failure. A rule whose exempt marker has no justification text is an infra-broken failure, halted loudly.
+
+This is small, structural, and closes the loop the original promotion principle opens. The rule that says *every drifting rule should be promoted to a binary-failure gate* is itself promoted to a binary-failure gate. Without that closure, the discipline is still behavioural — you might forget to give the next rule its perimeter, or you might add a new rule and skip the shape, and there is nothing in the workflow to halt you. With the closure, the discipline is self-validating: any new standing rule that lands without the shape, including this one, fails its own gate on its own commit.
+
+It is the smallest, cheapest, and most recursive of the binary-failure perimeters, and it is the one that makes the rest of them load-bearing over time rather than over a single sprint.
 
 ---
 

@@ -61,10 +61,12 @@ The document covers:
 4. The six layers — persona, standing rules, knowledge graph, **graph-integrity tooling (Proofing 0)**, egress filter, **deterministic closure (Proofing 1)**
 5. A 90-minute experiment you can run today
 6. **Proofing 0 worked example** — content-hashes + mutation ledgers in practice
-7. **Proofing 1 worked example** — the Prolog audit engine, with two real "structural sight" loops from the reference Brain
+7. **Proofing 1 worked example** — the Prolog audit engine, with four real "structural sight" loops from the reference Brain
 8. **The human-side disciplines that complement the audit** — ceiling-as-measurement, the Memory Tracer review pattern, two-PR additive-then-subtractive sequencing, cut-over diff review
-9. Honest cost / benefit
-10. Common objections, answered
+9. **Why these tiers are gates, not guidelines** — the single principle underneath every proofing tier: behavioural recall rules drift; binary-failure rules don't
+10. **Building your own audit rule** — the six-element architectural shape every binary-failure rule ships under, plus the small recursive verifier that audits the standing-rules block itself
+11. Honest cost / benefit
+12. Common objections, answered
 
 ## Why developers managing GitHub repos buy in
 
@@ -80,6 +82,7 @@ In the reference Brain, Proofing 1 has already caught:
 - A protocol-version pointer that drifted across two sections after a schema upgrade (several iterations).
 - An attempted PR that would have removed a banked lesson — the gate refused to let it land.
 - During a curation pass that demoted index detail into topical files, the same gate caught the cut-over **before** commit: every demoted row from the index was confirmed present in the topical file with the same id and the same closure state, refusing to let an index/detail mismatch ship.
+- A written rule that *every merged PR must be rowed in the merged-PR index* drifted under behavioural recall over a seven-day window; thirty PRs accumulated unrowed. Promoted to a small tri-state verifier, the rule went green at landing and then immediately caught two real misses on the next two commits, blocking each one until the row was added. The promotion-to-binary-failure pattern is documented as the six-element architectural shape used for every gate in the reference Brain.
 
 These are exactly the kinds of drift that **silently rot a wiki**. Here, they fail loudly, on a known PR, with a Prolog finding citing the offending file and line. **The audit reproduces what humans see when they look carefully — then it does it on every CI run, forever.**
 
