@@ -69,6 +69,7 @@ The document covers:
 12. **Building your own audit rule** — the six-element architectural shape every binary-failure rule ships under, plus the small recursive verifier that audits the standing-rules block itself
 13. Honest cost / benefit
 14. Common objections, answered
+15. **Running the pattern on more than one brain** — the pattern generalises to N Brains under a three-pile factoring (portable core / per-agent adaptation / implementation-specific machinery); tier self-declaration; cross-brain lesson inheritance convention (composition preserved, operator-only promotion, `<brain-slug>@<commit>:<path>` anchor format, offering-brain-cites-only-verifiable-anchors discipline); one anonymized worked example of an inherited candidate lesson recurring locally within 24h and its prevention wire-verified same day. A fuller federation architecture (contract commons, citation-without-replication) is in live trial with its first full exchange complete; documented as its own chapter when its receipts are written up.
 
 ## Why developers managing GitHub repos buy in
 
