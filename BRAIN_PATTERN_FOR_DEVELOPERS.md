@@ -371,7 +371,7 @@ Layers 4–6 (the proofing tiers) are deliberately out of scope for the 90-minut
 
 ## Day-1 seed kit: the six-step bootstrap as actually practised
 
-The 90-minute experiment above proves the pattern works on your material. When you decide to commit to it — to run your real work through a Brain, not just try it — the graduation path is a short bootstrap sequence that lands the load-bearing invariants on day one. The reference Brains that federate through the commons this pattern documents were each bootstrapped by this sequence; a template set that mirrors it lives in `seed/` in this repository.
+The 90-minute experiment above proves the pattern works on your material. When you decide to commit to it — to run your real work through a Brain, not just try it — the graduation path is a short bootstrap sequence that lands the load-bearing invariants on day one. The reference Brains this pattern draws on were each bootstrapped by this sequence; a template set that mirrors it lives in `seed/` in this repository.
 
 The six steps are ordered by *what breaks if you skip them*, not by tidiness. Skip step 3 and your first curation pass turns into a merge hazard. Skip step 4 and the temptation to fabricate the missing days becomes real. Skip step 5 and the first accidentally-staged credential is a public incident. The order is the argument.
 
