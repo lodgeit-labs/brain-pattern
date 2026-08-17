@@ -1,0 +1,49 @@
+# .gitignore — whitelist discipline
+#
+# Rationale: the Privacy Gradient (see the pattern doc) says private
+# context never leaks upstream. A blacklist-shaped .gitignore fails
+# open — a new secret-bearing file with an unanticipated extension
+# slips through. A whitelist-shaped .gitignore fails closed — nothing
+# is tracked unless explicitly permitted.
+#
+# The two lines below block everything by default, then whitelist the
+# specific paths that belong in the Brain. Adjust the whitelist to
+# match your Brain's actual layout; do NOT convert to blacklist-shape.
+
+# Block everything by default
+*
+
+# Whitelist the Brain surface
+!.gitignore
+!.github/
+!.github/**
+!*.md
+!AGENTS.md
+!IDENTITY.md
+!MEMORY.md
+!SOUL.md
+!USER.md
+!memory/
+!memory/**
+!PROJECT_NOTES/
+!PROJECT_NOTES/**
+!scripts/
+!scripts/**
+!seed/
+!seed/**
+!tooling/
+!tooling/**
+!Makefile
+!LICENSE
+!README.md
+
+# Block the classic secret-leaking classes even if whitelisted above
+# (belt-and-braces; secret_scanner.py is the load-bearing gate)
+**/.env
+**/.env.*
+**/*.pem
+**/*.key
+**/id_rsa
+**/id_ed25519
+**/.git-credentials
+**/credentials

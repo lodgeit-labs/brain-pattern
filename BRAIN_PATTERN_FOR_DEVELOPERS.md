@@ -369,6 +369,28 @@ Layers 4–6 (the proofing tiers) are deliberately out of scope for the 90-minut
 
 ---
 
+## Day-1 seed kit: the six-step bootstrap as actually practised
+
+The 90-minute experiment above proves the pattern works on your material. When you decide to commit to it — to run your real work through a Brain, not just try it — the graduation path is a short bootstrap sequence that lands the load-bearing invariants on day one. The reference Brains that federate through the commons this pattern documents were each bootstrapped by this sequence; a template set that mirrors it lives in `seed/` in this repository.
+
+The six steps are ordered by *what breaks if you skip them*, not by tidiness. Skip step 3 and your first curation pass turns into a merge hazard. Skip step 4 and the temptation to fabricate the missing days becomes real. Skip step 5 and the first accidentally-staged credential is a public incident. The order is the argument.
+
+**Step 1 — Engraving set authored.** Fill `SOUL.md`, `IDENTITY.md`, `USER.md` with *real* content, not placeholder text. Persona is the load-bearing seed for everything downstream: the agent's voice, the operator's disposition, the not-negotiables that will become standing rules. Placeholder engravings produce placeholder agents. If you cannot write a specific SOUL.md paragraph in one sitting, write no SOUL.md; return to it in an hour with real conviction rather than shipping generic-helpful into canon. See `seed/SOUL.md`, `seed/IDENTITY.md`, `seed/USER.md` for scaffolding.
+
+**Step 2 — `memory/lessons.md` seeded, including inherited candidates if federated.** A fresh Brain has no local lessons; that is honest. It may have inherited candidate lessons if it federates with a commons — lessons another Brain has offered and this Brain has accepted as reported evidence per the candidate-lesson lifecycle above. Record them explicitly with their inherited-versus-local composition (`n=3 inherited from <other-brain>; n=0 local`); do not promote them to canon on inherited evidence alone. Local promotion waits for local recurrence or independent re-anchoring. See `seed/memory/lessons.md`.
+
+**Step 3 — `memory/latest-activity.md` externalized from day one, with a provenance-honest founding entry.** Do not start with a rotating log inside `MEMORY.md` and defer the externalization; the maintainer discipline the externalization requires accretes on day one and gets structurally harder every day you postpone. The founding entry is your first append: what you did to bootstrap the Brain, in the same voice future turns will use. Provenance-honest means naming the day, the operator, and the fact that this is founding (not backfill). See `seed/memory/latest-activity.md`.
+
+**Step 4 — Daily note opened same day; NO backfill of unwitnessed days.** The daily-note file (`memory/<YYYY-MM-DD>.md`) opens the moment substantive work starts. It does not backfill days the Brain was not present for — a missing daily note is more honest than a fabricated one. The temptation to write yesterday's context into today's note *as if* it were witnessed is exactly the shape the zero-exec-invariant discipline in §5 above catches on the verification side: provenance is either real or absent; it is never confabulated. See `seed/memory/DAILY-NOTE-TEMPLATE.md`.
+
+**Step 5 — Whitelist `.gitignore` + secret-scan gate.** The `.gitignore` in a Brain is whitelist-shaped, not blacklist-shaped: block everything by default and enumerate the specific paths that belong in tracking. A blacklist fails open (a new secret-bearing filename with an unanticipated extension slips through); a whitelist fails closed (nothing is tracked unless permitted). Alongside the whitelist runs a small `scripts/secret_scanner.py` under the six-element rule shape from later in this doc — tri-state exit codes, pre-commit hook, CI backstop, fixture tests, prose entry in `MEMORY.md`, Makefile target. This is the Privacy Gradient's mechanical perimeter on day one; without it, the first accidentally-staged credential is a public incident. See `seed/.gitignore` and `seed/scripts/secret_scanner.py`.
+
+**Step 6 — Private repo, first push as the verification artifact, operator holds the credential.** Create the repo as *private*, on the operator's own credential (a fine-grained PAT scoped to Contents on this one repo is the reference shape). The first `git push` is not routine — it is the verification artifact for steps 1–5: if the whitelist misclassifies a real file, or the secret scanner fails to gate a staged credential, or the engraving set is malformed, the push is where the failure surfaces before any second party has visibility. The operator holds the credential end-to-end; no shared PAT store, no CI-side service account, no bot identity. Federation credentials (if you federate later) are separate PATs on separate stores under a separate access policy — the day-1 credential does not become the federation credential by drift.
+
+The seed set in `seed/` is prose-scaffolded rather than code-scaffolded on purpose: nothing in it will be *correct* for your Brain without your own content. It is a shape to fill, not a fork to inherit. If you find yourself editing a seed file to match your project, you are doing it right; if you find yourself using a seed file unchanged in production, the seed file did not do its job.
+
+---
+
 ## Worked example: Proofing 0
 
 The reference Brain anchors every canonical PROJECT_NOTES node with two YAML frontmatter fields:
