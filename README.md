@@ -60,14 +60,15 @@ The document covers:
 3. What lives in a Brain
 4. The six layers — persona, standing rules, knowledge graph, **graph-integrity tooling (Proofing 0)**, egress filter, **deterministic closure (Proofing 1)**
 5. A 90-minute experiment you can run today
-6. **Proofing 0 worked example** — content-hashes + mutation ledgers in practice
-7. **Proofing 1 worked example** — the Prolog audit engine, with four real "structural sight" loops from the reference Brain
-8. **The human-side disciplines that complement the audit** — maintainer disciplines (ceiling-as-measurement, don't-demote-auto-injected-rules, the Memory Tracer review pattern, two-PR additive-then-subtractive sequencing, cut-over diff review); operator disciplines (earn green honestly — never merge over a yellow, never fake the verification; fetch-and-assert on co-owned state before authoring against it); and a hybrid discipline (externalize the append-only timeline from the edited index — maintainer-shaped externalization act, operator-shaped ongoing append-versus-edit invariant)
-9. **Why these tiers are gates, not guidelines** — the single principle underneath every proofing tier: behavioural recall rules drift; binary-failure rules don't
-10. **Candidate-lesson lifecycle** — candidate → n-count accumulation (composition visible) → operator-only ratification at n≥3 → supersede-don't-erase on revision → inherited-versus-local composition on federation
-11. **Building your own audit rule** — the six-element architectural shape every binary-failure rule ships under, plus the small recursive verifier that audits the standing-rules block itself
-12. Honest cost / benefit
-13. Common objections, answered
+6. **Day-1 seed kit** — the six-step bootstrap sequence as actually practised (engraving set, lessons seed with inherited candidates, latest-activity externalized on day one, daily note opened without backfill, whitelist `.gitignore` + secret-scan gate, private repo with the first push as verification artifact), plus a `seed/` directory of scaffolded templates. Graduation path from the 90-minute experiment.
+7. **Proofing 0 worked example** — content-hashes + mutation ledgers in practice
+8. **Proofing 1 worked example** — the Prolog audit engine, with four real "structural sight" loops from the reference Brain
+9. **The human-side disciplines that complement the audit** — maintainer disciplines (ceiling-as-measurement, don't-demote-auto-injected-rules, the Memory Tracer review pattern, two-PR additive-then-subtractive sequencing, cut-over diff review); operator disciplines (earn green honestly — never merge over a yellow, never fake the verification; fetch-and-assert on co-owned state before authoring against it); and a hybrid discipline (externalize the append-only timeline from the edited index — maintainer-shaped externalization act, operator-shaped ongoing append-versus-edit invariant)
+10. **Why these tiers are gates, not guidelines** — the single principle underneath every proofing tier: behavioural recall rules drift; binary-failure rules don't
+11. **Candidate-lesson lifecycle** — candidate → n-count accumulation (composition visible) → operator-only ratification at n≥3 → supersede-don't-erase on revision → inherited-versus-local composition on federation
+12. **Building your own audit rule** — the six-element architectural shape every binary-failure rule ships under, plus the small recursive verifier that audits the standing-rules block itself
+13. Honest cost / benefit
+14. Common objections, answered
 
 ## Why developers managing GitHub repos buy in
 
