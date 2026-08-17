@@ -62,7 +62,7 @@ The document covers:
 5. A 90-minute experiment you can run today
 6. **Proofing 0 worked example** — content-hashes + mutation ledgers in practice
 7. **Proofing 1 worked example** — the Prolog audit engine, with four real "structural sight" loops from the reference Brain
-8. **The human-side disciplines that complement the audit** — ceiling-as-measurement, the Memory Tracer review pattern, two-PR additive-then-subtractive sequencing, cut-over diff review
+8. **The human-side disciplines that complement the audit** — maintainer disciplines (ceiling-as-measurement, don't-demote-auto-injected-rules, the Memory Tracer review pattern, two-PR additive-then-subtractive sequencing, cut-over diff review) and operator disciplines (earn green honestly — never merge over a yellow, never fake the verification; fetch-and-assert on co-owned state before authoring against it)
 9. **Why these tiers are gates, not guidelines** — the single principle underneath every proofing tier: behavioural recall rules drift; binary-failure rules don't
 10. **Building your own audit rule** — the six-element architectural shape every binary-failure rule ships under, plus the small recursive verifier that audits the standing-rules block itself
 11. Honest cost / benefit
