@@ -737,6 +737,49 @@ In the reference Brain — with ~150 facts, ~300 LOC of rules, and no indexing o
 
 ---
 
+## Running the pattern on more than one brain
+
+The 90-minute experiment and the day-1 seed kit both describe standing up *one* Brain. That is the right unit for getting started; it is not the right unit for a working practice. Once the pattern is proving out, a second Brain — a different agent, a different operator, a different scope of authority — becomes the natural next question. This section describes what running the pattern on more than one Brain looks like in practice, with receipts.
+
+### The pattern generalises: two live production instances
+
+At the time of this writing, this pattern has two live production instances. The first is the reference Brain that generated most of the material in this document. The second stood up in under a day using the day-1 seed kit above — a different agent with a different persona engraving, a different scope of authority, and a different operator relationship. Both are running the same layered file structure and the same proofing-tier discipline; both are private to their operators; both draw on the same public methodology under the org. The second-Brain bring-up time is the load-bearing receipt: if the six-step bootstrap could not stand up a fresh Brain in under a day, the seed kit above would not deserve its name.
+
+### The three-pile factoring
+
+What you find when you run the pattern on a second Brain is that everything in an existing Brain sorts into three piles, and only one of the piles moves:
+
+**Portable core** — the invariants that hold for any Brain: the layered file structure, the proofing tiers, the standing-rule discipline, the human-side disciplines and the candidate-lesson lifecycle above. This is what the *pattern* is. It is what the day-1 seed kit scaffolds. It moves cleanly to a new Brain because it does not depend on any particular agent, operator, or subject matter.
+
+**Per-agent adaptation** — persona, voice, sign-off, standing rules that reflect *this* agent's authority and *this* operator's disposition. This is what a new Brain writes fresh at bootstrap. It cannot be inherited because it is not portable by construction — an inherited persona is a placeholder persona, and placeholder personas produce placeholder agents.
+
+**Implementation-specific machinery** — the concrete scripts, the specific verifier bodies, the Prolog rules keyed to the local knowledge graph, the CI workflows tuned to the local repo. This is what the reference Brain accumulates over time and what a new Brain grows into as its own drift costs justify the mechanisation. It does not transfer cleanly; each Brain grows its own machinery under the same six-element rule shape.
+
+The factoring matters because it says what a new Brain inherits (the pattern), what it authors (its own engraving and rules), and what it earns over time (its own verifier corpus). Nothing in the third pile shortcuts the second; nothing in the first pile substitutes for the second.
+
+### Tier self-declaration
+
+Each Brain declares which pattern tier it is running — Layer 1 honest-manual, Proofing 0, or Proofing 1 — as part of its own canon. Declaration matters when Brains exchange evidence: a Layer 1 Brain's lesson candidates come with a different confidence profile than a Proofing 1 Brain's, and the honest way to make the difference legible is for each Brain to say what tier it runs. The declaration is prose in the Brain's own canon; it is not a badge or a compliance claim.
+
+### Cross-brain lesson inheritance
+
+Brains that federate can inherit candidate lessons from each other under a small explicit convention:
+
+- **Composition preserved.** A lesson row that carries inherited evidence names the composition explicitly: `n=4 (3 inherited from <other-brain>; 1 local)`, never a flat `n=4`. The candidate-lesson lifecycle above (Stage 5) is the mechanism.
+- **Operator-only promotion.** Cross-brain evidence may count toward a *local* promotion threshold, but promotion to canon is ratified by the receiving Brain's operator, per that Brain's own protocol. No Brain can promote a lesson into another Brain's canon.
+- **Anchor format.** Cross-brain anchors are written `<brain-slug>@<commit>:<path>` (optionally `#<locator>`), so the reference resolves to a specific point-in-time in a specific Brain. A wire consumer with access to that other Brain can fetch the anchor and read the source of the lesson at the exact commit where it was banked.
+- **Anchor-verification discipline.** An offering Brain cites only anchors it can itself verify — that is, `<brain-slug>@<commit>:<path>` references that resolve to the offering Brain's own history at a commit the offering Brain has published. Cross-brain anchors (references to another Brain's canon) are completed by the receiving Brain at acceptance, not fabricated by the offering Brain. Fabricating an unverifiable cross-brain anchor is a compliance failure; declining to cite one you cannot verify is compliance.
+
+### One live example, told anonymously
+
+Within the first federation exchange between the two live Brains, one inherited candidate lesson recurred on the receiving side within 24 hours — at a novel surface, in a different concrete shape than any of the offering Brain's prior instances of the same class. The failure mode the offering Brain had named was real on the receiving Brain too, in a place the receiving Brain had not seen it before. The prevention the offering Brain had proposed was wire-verified on the receiving side the same day the recurrence surfaced. This is the load-bearing property of the inheritance mechanism: an inherited lesson that catches a real local failure the receiving Brain had not yet paid for is an inheritance that earned its weight. Details of the specific surface and the exchange belong to the operators involved; the *shape* of the event — inherit, recur, catch, prevent, wire-verify same day — is what the mechanism is for.
+
+### On the fuller federation architecture
+
+The convention above (composition, promotion, anchor format, anchor-verification discipline) describes lesson inheritance between Brains. It does not yet describe a full federation architecture — the contract-commons layer, citation-without-replication, append-only ledgers, and the operator-ratified amendment discipline that lets multiple Brains share a durable interchange surface without any Brain overriding another. That architecture is in live trial between the two production Brains and has completed its first full exchange, including its first operator-ratified contract amendment. It will be documented as its own chapter when its receipts are written up.
+
+---
+
 ## Reference implementation
 
 LodgeiT Labs runs this pattern in production for the development of its open-source accounting and tax compliance systems. The public-facing pieces of that implementation are:
@@ -756,7 +799,7 @@ If you experiment and the pattern fits, the next steps are:
 
 1. **Add Proofing 0 (Layer 4).** Without it, the Brain corrupts under multi-author load. Take a look at the reference implementation; lift the scripts.
 2. **Define your standing rules.** What must your agent never do? Write those down.
-3. **Decide on a Brain topology.** One Brain per developer? One per team? One per product line? Brains can `git submodule` other Brains.
+3. **Decide on a Brain topology.** One Brain per developer? One per team? One per product line? A useful anonymized default: private Brains under each operator's own account, this public pattern under the org. See the *Running the pattern on more than one brain* section below for how multi-Brain topology works in practice.
 4. **Decide on egress discipline.** When does Brain content ever become public? Define that path; gate it.
 5. **Add Proofing 1 (Layer 6) when you outgrow eyeball audits.** Start with one or two rules — a ceiling check, a dangling-citation check — wired into a non-blocking CI step. Watch them fire on real drift. Flip to blocking only when the rule set is stable.
 6. **Iterate.** Brains get better with use. Yours will look different from anybody else's after six months. That's correct behaviour.
