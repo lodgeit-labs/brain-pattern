@@ -550,7 +550,7 @@ The first four disciplines above are *maintainer* disciplines — they govern ho
 
 Every binary-failure gate the Brain ships has a tri-state exit contract: `0` clean, `1` real violation, `2+` verifier broken. A maintainer holding the merge button can turn any of those into a green PR by pressing hard enough on the wrong lever: overriding a yellow (`2+`) on the theory that it looked infra-flavoured, overriding a red (`1`) on the theory that the finding was a false positive, or — the shape most worth naming — writing prose that describes a verification without actually running one.
 
-The reference Brain has paid for each of these once. The load-bearing rule that survived is a single principle with three attached mechanisms.
+The reference Brain has paid for the third of these once (the fabricated-verification incident of 2026-08-14, which produced the zero-exec invariant); the first two are shape-recognized failure modes the tri-state contract is built against — designed-for, not yet incident-anchored. The load-bearing rule that survived is a single principle with three attached mechanisms.
 
 **The principle: green is earned by the verifier, not asserted by the author.** A rule that fires `1` gets cleared by fixing the underlying state and re-running until the verifier itself returns `0` — never by overriding the exit code, never by editing the verifier to be quiet, never by claiming the finding is spurious in the PR body. A rule that fires `2+` (infra broken) gets cleared by *repairing the verifier* and re-running, never by promoting the yellow to a green in the CI config. The tri-state contract is only load-bearing if every state is honoured.
 
